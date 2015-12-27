@@ -1,0 +1,107 @@
+% addpath('G:\Dataset');
+% X= load('G:\Dataset\ex2x.dat');
+% X=[ones(size(X,1),1) X];
+% Y= load('G:\Dataset\ex2y.dat');
+% % % No of training samples 
+% m= size(X,1);
+%%  RBF functions
+% Var=1;
+% for i=1:size(X,1)
+%     for j=1:size(X,1)
+%     XR(j,i)= exp(-1 * (Var ^ -1) * norm(X(j,2)-X(i,2))^2);
+%     end
+% end
+% XR=[X(:,1) XR];
+
+%%%%%% NORMAL EQUATION METHOD
+% thetaRbfs= (XR' * XR)\ XR' * Y;
+% 
+% % % training error
+% YhatRbfs= XR*thetaRbfs;
+% RMSErrorRbfs= sqrt(1/m *(Y-YhatRbfs)' * (Y- YhatRbfs));
+% costLinearRbfs= (Y-YhatRbfs)' * (Y - YhatRbfs); % Cost function \ Squared Error
+% plot(X(:,2),Y,'O')
+% hold on;
+% plot(X(:,2),YhatRbfs)
+ 
+%%%%%%% GRADIENT DESCENT with a random alpha or step size
+%% Gradient descent on Rbf 
+%  alpha= 0.001
+%   thetaGradRbf=zeros(size(XR,2),1);
+% 
+%   thetaRandomRbf=randn(size(thetaGradRbf));
+% 
+% 
+% noOfIterations=0;
+% while thetaGradRbf ~=thetaRandomRbf
+%     noOfIterations=noOfIterations+1;
+%     thetaRandomRbf=thetaGradRbf;
+%     thetaGradRbf=thetaGradRbf- alpha  * XR'* (XR*thetaGradRbf - Y);
+%  end
+
+%%%%%%% GRADIENT DESCENT with automatic step size using backtracking line search
+%% Using Gradient descent on Rbfs using backtracking line search
+% alpha= 0.5;
+% beta= 0.8;
+% 
+% thetaGradLnSearchRbf=zeros(size(XR,2),1);
+% thetaRandomLnSearchRbf=randn(size(thetaGradLnSearchRbf));
+% iter=0;
+% iterInner=0;
+% for i=1:100000
+%     t=1;
+%     iter=iter+1;
+%     while (Y-XR *(thetaGradLnSearchRbf- t *XR'* (XR*thetaGradLnSearchRbf - Y) ))' * (Y- XR * (thetaGradLnSearchRbf- t *XR'* (XR*thetaGradLnSearchRbf - Y) ))>(Y-XR *thetaGradLnSearchRbf)' * (Y- XR * thetaGradLnSearchRbf) - alpha * t *  (XR'* (XR*thetaGradLnSearchRbf - Y))' * (XR'* (XR*thetaGradLnSearchRbf - Y)) 
+%         t= beta * t;
+%         iterInner=iterInner+1;
+%     end
+%         thetaRandomLnSearchRbf=thetaGradLnSearchRbf;
+%         thetaGradLnSearchRbf=thetaGradLnSearchRbf- t  * XR'* (XR*thetaGradLnSearchRbf - Y);
+% end
+% YhatGradLnSearchRbf= XR * thetaGradLnSearchRbf;
+% costGradLnSearchRbf= (Y- YhatGradLnSearchRbf)' * (Y- YhatGradLnSearchRbf); 
+
+%%%%%%%%%%%% HESSIAN or newton method or second order derivative
+%% Using Hessian on RBF
+% HessRbf= XR' * XR;
+% thetaHessianRbf=zeros(size(XR,2),1);
+% thetaHessianRbf=thetaHessianRbf- HessRbf\ ((XR'*XR)* thetaHessianRbf - XR' *Y );
+%   % % training error
+% YhatHessianRbf= XR*thetaHessianRbf;
+% RMSErrorRbfsHessian= sqrt(1/m *(Y-YhatHessianRbf)' * (Y- YhatHessianRbf));
+% costLinearRbfsHessian= (Y-YhatHessianRbf)' * (Y - YhatHessianRbf); % Cost function \ Squared Error
+
+
+
+%%%%%%%%%%%%%%%%%%% RIDGE REGRESSION which is a regularized regression with L2 regularization on thetas 
+%%%%%%% Using a cross validation implementation to get the best ridge estimator
+%% Ridge regression for RBFs
+
+%% Cross Validation on training and choosing the ridge delta estimator which gives least average error
+% tempCost=1;
+% deltaTemp=0;
+% totalTempCost=0;
+% for deltaValue=0.001:0.001:0.1,
+%     for k=1:10,
+%         [sample,idx]=datasample(XR,size(XR,1)/10);
+%         Xtemp=XR(setdiff(1:size(XR,1),idx),:);
+%         Ytemp=Y(setdiff(1:size(XR,1),idx),:);
+%         thetaRidgeRbfTemp= (Xtemp' * Xtemp+(deltaValue^2) * eye(size(Xtemp' * Xtemp))) \  Xtemp' * Ytemp;
+%         YhatRidgeRbfTemp= sample*thetaRidgeRbfTemp;
+%         costLinearRbfRidgeRegTempTest= (Y(idx,:)-YhatRidgeRbfTemp)' * (Y(idx,:)- YhatRidgeRbfTemp) + (deltaValue^2) * (thetaRidgeRbfTemp' * thetaRidgeRbfTemp);
+%         totalTempCost=totalTempCost+costLinearRbfRidgeRegTempTest; 
+%     end
+%         avgTempCost=totalTempCost/10;
+%         if avgTempCost<tempCost
+%             deltaTemp=deltaValue;
+%             tempCost=avgTempCost;
+%         end
+%     
+% end
+
+% % Using the delta parameter got above
+% delta= deltaTemp;
+% thetaRidgeRbf= (XR' * XR+(delta^2) * eye(size(XR' * XR))) \  XR' * Y;
+% % % training error
+% YhatRidgeRbf= XR*thetaRidgeRbf;
+% costLinearRbfRidgeReg= (Y-YhatRidgeRbf)' * (Y- YhatRidgeRbf) + (delta^2) * (thetaRidgeRbf' * thetaRidgeRbf);
